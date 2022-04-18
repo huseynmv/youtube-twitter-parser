@@ -131,13 +131,14 @@ def index(request):
                 'like' : result['statistics']['likeCount'] if ("likeCount" in result['statistics']) else "0",
                 'views' : result['statistics']['viewCount'],
                 'comments':result['statistics']['commentCount'] if ("commentCount" in result['statistics']) else "0",
-                'date' : int(str(datetime.now()-(parser.parse(result['snippet']['publishedAt']).replace(tzinfo=None)))[:2]),
+                # 'date' : int(str(datetime.now()-(parser.parse(result['snippet']['publishedAt']).replace(tzinfo=None)))[:2]),
+                'date' : (datetime.now() - datetime.strptime(result['snippet']['publishedAt'], "%Y-%m-%dT%H:%M:%SZ")).total_seconds() / 60 
                 # 'current_date' : datetime.now(),
                 
                 # 'difference' : video_data['current_date'] - video_data['date'].replace(tzinfo=None)
             }            
             videos.append(video_data)
-            
+        print(videos[0])
 # twitter 
         
     auth = tweepy.OAuthHandler('lmi9wxZFfoKbsQsFHnS0b2wm1', 'mBdxtC2bi5QQsChY5mxGCP0eUbheoE2K7NNSlAn9TjjiHHqurO')
