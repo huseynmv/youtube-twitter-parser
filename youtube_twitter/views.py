@@ -7,7 +7,7 @@ from dateutil import parser
 from datetime import datetime, tzinfo
 from twython import Twython
 import json
-import pandas as pd
+
 LOGGING = {
     'version': 1,
     'handlers': {
