@@ -1,10 +1,13 @@
+from traceback import print_tb
 from django.urls import reverse_lazy
 import requests
 import logging, logging.config
 import sys
 from dateutil import parser
 from datetime import datetime, tzinfo
-
+from twython import Twython
+import json
+import pandas as pd
 LOGGING = {
     'version': 1,
     'handlers': {
@@ -140,22 +143,58 @@ def index(request):
             videos.append(video_data)
         print(videos[0])
 # twitter 
-        
-    auth = tweepy.OAuthHandler('lmi9wxZFfoKbsQsFHnS0b2wm1', 'mBdxtC2bi5QQsChY5mxGCP0eUbheoE2K7NNSlAn9TjjiHHqurO')
-    auth.set_access_token('1308320106955575296-xTOiFToEm9vbI3Ylhp7Gdi3Gpkrvmp', 'ZKYs9xo1zQEuGakbO69PzTGcF7AWJSCMFtZF2wXBi45DH')
-    api = tweepy.API(auth)
-    trends_result = api.get_place_trends(1)
+
+
+
+    # tweets = api.user_timeline(id='python', count=200)
+    # tweets_extended = api.user_timeline(id='python', tweet_mode='extended', count=200)
+ 
+# Show one tweet's JSON
+    # tweet = tweets[0]
+    # print(tweet._json)
         
 
     
     context = {
         'videos' : videos,
         'channels' : channels,
-        'trend' : trends_result[0]['trends'][:10],
+        # 'trend' : trends_result[0]['trends'][:10],
         # 'time_delta':timedelta
     }
 
     return render(request, 'index.html', context)
+
+def twitter(request):
+    # Search tweets
+
+    auth = tweepy.OAuthHandler('lmi9wxZFfoKbsQsFHnS0b2wm1', 'mBdxtC2bi5QQsChY5mxGCP0eUbheoE2K7NNSlAn9TjjiHHqurO')
+    auth.set_access_token('1308320106955575296-xTOiFToEm9vbI3Ylhp7Gdi3Gpkrvmp', 'ZKYs9xo1zQEuGakbO69PzTGcF7AWJSCMFtZF2wXBi45DH')
+    api = tweepy.API(auth)
+    trends_result = api.get_place_trends(1)
+    dict_ = {'user': [], 'date': [], 'text': [], 'favorite_count': []}
+    if request.method == 'POST':
+        python_tweets = Twython('lmi9wxZFfoKbsQsFHnS0b2wm1','mBdxtC2bi5QQsChY5mxGCP0eUbheoE2K7NNSlAn9TjjiHHqurO' )
+        query = {'q': request.POST['search'],
+        'result_type': 'popular',
+        'count': 10,
+        'lang': 'en',
+        }
+        dict_ = {'user': [], 'date': [], 'text': [], 'favorite_count': []}
+        for status in python_tweets.search(**query)['statuses']:
+            dict_['user'].append(status['user']['screen_name'])
+            dict_['date'].append(status['created_at'])
+            dict_['text'].append(status['text'])
+            dict_['favorite_count'].append(status['favorite_count'])
+
+    
+    context = {
+        'trend' : trends_result[0]['trends'][:10],
+        'user': dict_['user'],
+        'text': dict_['text']
+    }
+    
+    return render(request, 'twitter.html', context)
+
 
 def login(request):
     return render(request, 'login.html')
